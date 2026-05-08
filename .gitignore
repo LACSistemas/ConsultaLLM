@@ -1,0 +1,164 @@
+# ============================================================
+# ENVIRONMENT & SECRETS
+# ============================================================
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# ============================================================
+# PYTHON
+# ============================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+nosetests.xml
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+.pytype/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================================
+# NODE / JAVASCRIPT / TYPESCRIPT
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+
+# Build outputs
+dist/
+build/
+out/
+.output/
+
+# Vite
+.vite/
+vite.config.ts.timestamp-*
+
+# Next.js (conselho-ia/)
+.next/
+.next/**
+next-env.d.ts
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# ============================================================
+# DATABASE & STORAGE
+# ============================================================
+backend/storage/
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================================
+# CLAUDE CODE
+# ============================================================
+.claude/
+
+# ============================================================
+# IDE & EDITORS
+# ============================================================
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+.netrwhist
+Session.vim
+
+# Emacs
+*#
+.#*
+\#*#
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# ============================================================
+# OS
+# ============================================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+.directory
+
+# ============================================================
+# MISC
+# ============================================================
+*.log
+*.log.*
+logs/
+*.pid
+*.seed
+*.gz
+*.tar
+*.zip
+*.bak
+*.tmp
+*.temp
