@@ -5,9 +5,7 @@ export const uploadAttachment = (chatId: string, file: File): Promise<Attachment
   const formData = new FormData()
   formData.append('file', file)
   return apiClient
-    .post<Attachment>(`/chats/${chatId}/attachments`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    .post<Attachment>(`/chats/${chatId}/attachments`, formData)
     .then((r) => r.data)
 }
 

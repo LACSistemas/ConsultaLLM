@@ -48,7 +48,7 @@ async def send_message(chat_id: str, body: CouncilRequest, db: AsyncSession = De
     )
 
     if body.attachment_ids:
-        await attachment_service.link_attachments_to_message(db, body.attachment_ids, assistant_msg.id)
+        await attachment_service.link_attachments_to_message(db, body.attachment_ids, user_msg.id)
 
     await chat_service.auto_title_chat(db, chat_id, body.message)
 
