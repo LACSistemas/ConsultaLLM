@@ -19,7 +19,7 @@ class OpenAIProvider(LLMProvider):
             resp = await self._client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "system", "content": system}, *messages],
-                max_tokens=300,
+                max_tokens=1024,
                 temperature=0.7,
             )
             return resp.choices[0].message.content or ""
@@ -62,7 +62,7 @@ RACIOCÍNIO: [explicação estratégica de por que essa é a melhor decisão]"""
                     {"role": "system", "content": CEO_SYSTEM_PROMPT},
                     {"role": "user", "content": prompt},
                 ],
-                max_tokens=400,
+                max_tokens=1500,
                 temperature=0.5,
             )
             return resp.choices[0].message.content or ""

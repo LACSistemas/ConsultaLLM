@@ -22,7 +22,7 @@ class DeepSeekProvider(LLMProvider):
             resp = await self._client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[{"role": "system", "content": system}, *messages],
-                max_tokens=300,
+                max_tokens=1024,
                 temperature=0.7,
             )
             return resp.choices[0].message.content or ""
