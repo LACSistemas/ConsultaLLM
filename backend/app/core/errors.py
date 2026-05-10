@@ -30,4 +30,4 @@ async def provider_error_handler(request: Request, exc: ProviderError) -> JSONRe
 
 
 async def attachment_parse_error_handler(request: Request, exc: AttachmentParseError) -> JSONResponse:
-    return JSONResponse(status_code=422, content={"detail": str(exc)})
+    return JSONResponse(status_code=400, content={"detail": str(exc)})
