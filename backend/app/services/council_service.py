@@ -45,7 +45,14 @@ async def run_council(
     attachment_texts: list[str],
 ) -> CouncilResult:
     history = truncate_history(chat_history, max_msgs=20)
-    messages_for_counselors = [*history, {"role": "user", "content": user_message}]
+    attachment_context = format_attachment_context(attachment_texts)
+
+    if attachment_context:
+        user_content = f"{user_message}\n\nCONTEÚDO DO ANEXO:\n{attachment_context}"
+    else:
+        user_content = user_message
+
+    messages_for_counselors = [*history, {"role": "user", "content": user_content}]
 
     deepseek_task = _deepseek.complete(DS_SYSTEM, messages_for_counselors)
     gemini_task = _gemini.complete(GEM_SYSTEM, messages_for_counselors)
@@ -64,7 +71,6 @@ async def run_council(
     ]
 
     history_text = format_history_as_text(history)
-    attachment_context = format_attachment_context(attachment_texts)
 
     ceo_text = await _openai.complete_as_ceo(
         user_message=user_message,
