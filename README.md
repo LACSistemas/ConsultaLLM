@@ -1,6 +1,6 @@
 # Conselho de IA
 
-Aplicação local onde você conversa com um conselho de LLMs. Cada pergunta é enviada em paralelo para **DeepSeek**, **Gemini** e **Anthropic Claude**, e a **OpenAI** atua como CEO consolidando as respostas.
+Aplicação local onde você conversa com um conselho de LLMs. Cada pergunta é enviada em paralelo para **DeepSeek**, **Gemini** e **Anthropic Claude**, e a **OpenAI** atua como CEO auditável: consolida a decisão, compara os conselheiros e explicita confiança, consensos, divergências, riscos, verificações e próximos passos.
 
 ## Pré-requisitos
 
@@ -34,10 +34,10 @@ As chaves `DATABASE_URL` e `UPLOAD_DIR` já têm valores padrão — não precis
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8080
 ```
 
-O servidor sobe em `http://localhost:8000`. Acesse `http://localhost:8000/docs` para ver a API.
+O servidor sobe em `http://localhost:8080`. Acesse `http://localhost:8080/docs` para ver a API.
 
 ### 3. Inicie o Frontend
 
@@ -57,7 +57,7 @@ Acesse `http://localhost:5173` no navegador.
 2. Digite sua pergunta na caixa de texto
 3. Opcionalmente, clique no clipe para anexar um PDF ou planilha XLSX
 4. Pressione o botão de envio ou **Ctrl+Enter**
-5. Aguarde as respostas dos 3 conselheiros e a decisão final do CEO
+5. Aguarde as respostas dos 3 conselheiros e a avaliação auditável do CEO
 
 ## Estrutura do projeto
 
@@ -71,6 +71,6 @@ frontend/          ← Interface React + Vite
 
 **Backend não sobe**: verifique se o Python é 3.11+ com `python --version`
 
-**Frontend não conecta ao backend**: certifique-se de que o backend está rodando na porta 8000
+**Frontend não conecta ao backend**: certifique-se de que o backend está rodando na porta 8080
 
 **Erro de provider**: verifique se a API key correspondente está preenchida no `backend/.env`

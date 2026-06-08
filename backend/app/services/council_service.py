@@ -1,6 +1,9 @@
 import asyncio
+import json
 import re
 import logging
+
+from pydantic import ValidationError
 
 from app.providers.deepseek_provider import DeepSeekProvider, SYSTEM_PROMPT as DS_SYSTEM
 from app.providers.gemini_provider import GeminiProvider, SYSTEM_PROMPT as GEM_SYSTEM
@@ -23,13 +26,52 @@ class CouncilResult:
         self.ceo_decision = ceo_decision
 
 
-def _parse_ceo_response(text: str) -> CEODecision:
+def _extract_json_object(text: str) -> dict | None:
+    try:
+        parsed = json.loads(text)
+        return parsed if isinstance(parsed, dict) else None
+    except json.JSONDecodeError:
+        pass
+
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        return None
+
+    try:
+        parsed = json.loads(match.group(0))
+        return parsed if isinstance(parsed, dict) else None
+    except json.JSONDecodeError:
+        return None
+
+
+def _fallback_ceo_response(text: str) -> CEODecision:
     decision_match = re.search(r"DECISÃO:\s*(.+?)(?=RACIOCÍNIO:|$)", text, re.DOTALL)
     reasoning_match = re.search(r"RACIOCÍNIO:\s*(.+)", text, re.DOTALL)
-    return CEODecision(
-        decision=decision_match.group(1).strip() if decision_match else text.strip(),
-        reasoning=reasoning_match.group(1).strip() if reasoning_match else "Análise baseada nas múltiplas perspectivas fornecidas.",
+    decision = decision_match.group(1).strip() if decision_match else text.strip()
+    reasoning = (
+        reasoning_match.group(1).strip()
+        if reasoning_match
+        else "Análise baseada nas múltiplas perspectivas fornecidas."
     )
+    return CEODecision(
+        decision=decision or "Não foi possível extrair uma decisão clara.",
+        reasoning=reasoning,
+        confidence=0.4,
+        risks=["A resposta do CEO não veio no formato auditável esperado."],
+        verification_needed=["Revise manualmente as respostas dos conselheiros antes de agir."],
+    )
+
+
+def _parse_ceo_response(text: str) -> CEODecision:
+    parsed = _extract_json_object(text)
+    if parsed is None:
+        return _fallback_ceo_response(text)
+
+    try:
+        return CEODecision.model_validate(parsed)
+    except ValidationError as exc:
+        logger.warning("CEO response failed audit schema validation: %s", exc)
+        return _fallback_ceo_response(text)
 
 
 def _safe_response(result, provider_name: str) -> str:

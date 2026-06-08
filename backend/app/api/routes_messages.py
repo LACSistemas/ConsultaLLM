@@ -34,10 +34,7 @@ async def send_message(chat_id: str, body: CouncilRequest, db: AsyncSession = De
 
     counselors_data = [c.model_dump() for c in result.counselors]
     import json as _json
-    ceo_content = _json.dumps({
-        "decision": result.ceo_decision.decision,
-        "reasoning": result.ceo_decision.reasoning,
-    }, ensure_ascii=False)
+    ceo_content = _json.dumps(result.ceo_decision.model_dump(), ensure_ascii=False)
 
     assistant_msg = await chat_service.add_message(
         db,

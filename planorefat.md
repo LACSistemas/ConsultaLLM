@@ -45,7 +45,7 @@ openai_provider.py — CEO: usa openai SDK, modelo gpt-4o-mini, método extra co
 app/services/
 council_service.py ← PORT de conselho-ia/src/app/api/ai-council/route.ts
 Usa asyncio.gather(return_exceptions=True) para chamar os 3 conselheiros em paralelo (melhoria de ~3x vs sequencial atual)
-CEO prompt mantém o formato DECISÃO:/RACIOCÍNIO: do código atual, mas adiciona histórico da conversa e contexto de anexos
+CEO retorna JSON auditável com decisão, raciocínio, confiança, consensos, divergências, avaliação de cada conselheiro, riscos, verificações e próximos passos
 Provider failure retorna placeholder em vez de crashar o request
 chat_service.py — CRUD: create_chat, get_chat, list_chats, add_message, get_chat_history (últimos 10 pares), auto_title_chat
 attachment_service.py — Recebe UploadFile, salva no disco, chama pdf/xlsx service, cria registro no DB
@@ -63,7 +63,7 @@ Fase 2: Frontend (frontend/)
 Raiz
 Arquivo	O que faz
 package.json	react 19, react-router-dom 7, @tanstack/react-query 5, axios, lucide-react, @radix-ui/*, tailwindcss 4, vite, typescript
-vite.config.ts	plugin react + tailwindcss, alias @ → ./src, proxy /api → http://localhost:8000
+vite.config.ts	plugin react + tailwindcss, alias @ → ./src, proxy /api → http://localhost:8080
 tsconfig.json	strict mode, path alias @/*
 index.html	Shell Vite, title "Conselho de IA"
 Código-fonte

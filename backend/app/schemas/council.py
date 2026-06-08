@@ -1,11 +1,11 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.schemas.message import CounselorResponse, CEODecision
 
 
 class CouncilRequest(BaseModel):
     message: str
-    attachment_ids: Optional[list[str]] = []
+    attachment_ids: Optional[list[str]] = Field(default_factory=list)
 
 
 class CouncilResponse(BaseModel):

@@ -223,7 +223,7 @@ Reinstale o Node.js e reinicie o terminal após a instalação.
 Execute `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` no terminal e tente novamente.
 
 **O servidor sobe mas a interface não conecta**
-Verifique se o backend está rodando na porta 8000. Se estiver usando outra porta, avise quem te passou o projeto.
+Verifique se o backend está rodando na porta 8080. Se estiver usando outra porta, avise quem te passou o projeto.
 
 **Erro de provider / API Key inválida**
 Confira se colou a chave correta no arquivo `backend\.env` sem espaços extras antes ou depois do `=`.

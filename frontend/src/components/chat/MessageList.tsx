@@ -6,10 +6,22 @@ import CEOCard from '@/components/council/CEOCard'
 import LoadingCounselors from '@/components/council/LoadingCounselors'
 
 function parseCEOContent(content: string): CEODecision {
+  const defaults: CEODecision = {
+    decision: content,
+    reasoning: '',
+    confidence: 0.5,
+    consensus: [],
+    disagreements: [],
+    counselor_assessments: [],
+    risks: [],
+    verification_needed: [],
+    next_steps: [],
+  }
+
   try {
-    return JSON.parse(content) as CEODecision
+    return { ...defaults, ...(JSON.parse(content) as Partial<CEODecision>) }
   } catch {
-    return { decision: content, reasoning: '' }
+    return defaults
   }
 }
 
