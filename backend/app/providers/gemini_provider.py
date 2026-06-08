@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from app.core.config import settings
 from app.core.errors import ProviderError
@@ -12,22 +13,26 @@ SYSTEM_PROMPT = (
 
 class GeminiProvider(LLMProvider):
     def __init__(self):
-        genai.configure(api_key=settings.gemini_api_key)
-        self._model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
-            system_instruction=SYSTEM_PROMPT,
-        )
+        self._client = genai.Client(api_key=settings.gemini_api_key)
 
     async def complete(self, system: str, messages: list[dict]) -> str:
         try:
-            history = []
+            contents = []
             for m in messages[:-1]:
                 role = "user" if m["role"] == "user" else "model"
-                history.append({"role": role, "parts": [m["content"]]})
+                contents.append({"role": role, "parts": [{"text": m["content"]}]})
 
-            last_msg = messages[-1]["content"] if messages else ""
-            chat = self._model.start_chat(history=history)
-            resp = await chat.send_message_async(last_msg)
-            return resp.text or ""
+            if messages:
+                contents.append({"role": "user", "parts": [{"text": messages[-1]["content"]}]})
+
+            response = await self._client.aio.models.generate_content(
+                model="gemini-3.1-flash-lite",
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    system_instruction=system,
+                    max_output_tokens=1024,
+                ),
+            )
+            return response.text or ""
         except Exception as e:
             raise ProviderError("Gemini", str(e)) from e
