@@ -15,9 +15,24 @@ export interface CounselorResponse {
   response: string
 }
 
+export interface CounselorAssessment {
+  provider: 'deepseek' | 'gemini' | 'anthropic' | string
+  strengths: string[]
+  weaknesses: string[]
+  contribution: string
+  confidence: number
+}
+
 export interface CEODecision {
   decision: string
   reasoning: string
+  confidence: number
+  consensus: string[]
+  disagreements: string[]
+  counselor_assessments: CounselorAssessment[]
+  risks: string[]
+  verification_needed: string[]
+  next_steps: string[]
 }
 
 export interface Message {
