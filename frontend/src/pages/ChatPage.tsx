@@ -1,4 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { MessageSquare } from 'lucide-react'
 import AppShell from '@/components/layout/AppShell'
 import ChatHeader from '@/components/chat/ChatHeader'
@@ -7,27 +9,64 @@ import MessageInput from '@/components/chat/MessageInput'
 import { useChats, useCreateChat } from '@/hooks/useChats'
 import { useMessages, useSendMessage } from '@/hooks/useMessages'
 import { useUploadAttachment } from '@/hooks/useAttachments'
-import { useState } from 'react'
+import { sendMessage as sendMessageRequest } from '@/api/messages'
+import {
+  deleteAttachment as deleteAttachmentRequest,
+  uploadAttachment as uploadAttachmentRequest,
+} from '@/api/attachments'
 
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: chats = [] } = useChats()
   const createChat = useCreateChat()
   const { data: messages = [], isLoading } = useMessages(chatId)
   const sendMessage = useSendMessage(chatId ?? '')
   const uploadAttachment = useUploadAttachment(chatId ?? '')
   const [pendingMessage, setPendingMessage] = useState<string>()
+  const [isCreatingAndSending, setIsCreatingAndSending] = useState(false)
+  const creatingChatRef = useRef<Promise<string> | null>(null)
 
-  const currentChat = chats.find((c) => c.id === chatId)
+  const currentChat = chats.find((chat) => chat.id === chatId)
+  const isPending = sendMessage.isPending || isCreatingAndSending
+
+  const ensureChat = async () => {
+    if (chatId) return chatId
+    if (!creatingChatRef.current) {
+      creatingChatRef.current = createChat
+        .mutateAsync(undefined)
+        .then((chat) => {
+          navigate(`/chat/${chat.id}`)
+          return chat.id
+        })
+        .catch((error) => {
+          creatingChatRef.current = null
+          throw error
+        })
+    }
+    return creatingChatRef.current
+  }
 
   const handleSend = async (message: string, attachmentIds: string[]) => {
+    setPendingMessage(message)
+
     if (!chatId) {
-      const chat = await createChat.mutateAsync(undefined)
-      navigate(`/chat/${chat.id}`)
+      setIsCreatingAndSending(true)
+      try {
+        const newChatId = await ensureChat()
+        await sendMessageRequest(newChatId, message, attachmentIds)
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['messages', newChatId] }),
+          queryClient.invalidateQueries({ queryKey: ['chats'] }),
+        ])
+      } finally {
+        setIsCreatingAndSending(false)
+        setPendingMessage(undefined)
+      }
       return
     }
-    setPendingMessage(message)
+
     try {
       await sendMessage.mutateAsync({ message, attachmentIds })
     } finally {
@@ -35,50 +74,52 @@ export default function ChatPage() {
     }
   }
 
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    const attachmentChatId = await ensureChat()
+    await deleteAttachmentRequest(attachmentChatId, attachmentId)
+  }
+
   const handleUpload = async (file: File) => {
     if (!chatId) {
-      const chat = await createChat.mutateAsync(undefined)
-      navigate(`/chat/${chat.id}`)
-      throw new Error('Chat created, try uploading again')
+      const newChatId = await ensureChat()
+      return uploadAttachmentRequest(newChatId, file)
     }
     return uploadAttachment.mutateAsync(file)
   }
 
-  if (!chatId) {
-    return (
-      <AppShell>
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8">
-          <div className="p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6">
-            <MessageSquare className="h-12 w-12 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-700 mb-2">Conselho de IA</h2>
-          <p className="text-center max-w-md mb-6">
-            Consulte múltiplas inteligências artificiais e obtenha a decisão mais informada.
-            Clique em <strong>Novo Chat</strong> para começar.
-          </p>
-        </div>
-      </AppShell>
-    )
-  }
-
   return (
     <AppShell>
-      <ChatHeader chat={currentChat} />
-      {isLoading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
+      {chatId ? (
+        <>
+          <ChatHeader chat={currentChat} />
+          {isLoading ? (
+            <div className="flex flex-1 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+            </div>
+          ) : (
+            <MessageList
+              messages={messages}
+              isPending={isPending}
+              pendingMessage={pendingMessage}
+            />
+          )}
+        </>
       ) : (
-        <MessageList
-          messages={messages}
-          isPending={sendMessage.isPending}
-          pendingMessage={pendingMessage}
-        />
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-slate-500">
+          <div className="mb-6 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-4">
+            <MessageSquare className="h-12 w-12 text-white" />
+          </div>
+          <h2 className="mb-2 text-2xl font-bold text-slate-700">Conselho de IA</h2>
+          <p className="max-w-md text-center">
+            Digite sua primeira pergunta abaixo. O chat será criado e a mensagem será enviada automaticamente.
+          </p>
+        </div>
       )}
       <MessageInput
         onSend={handleSend}
         onUpload={handleUpload}
-        isPending={sendMessage.isPending}
+        onDeleteAttachment={handleDeleteAttachment}
+        isPending={isPending}
       />
     </AppShell>
   )

@@ -6,8 +6,13 @@ export const uploadAttachment = (chatId: string, file: File): Promise<Attachment
   formData.append('file', file)
   return apiClient
     .post<Attachment>(`/chats/${chatId}/attachments`, formData)
-    .then((r) => r.data)
+    .then((response) => response.data)
 }
 
+export const deleteAttachment = (chatId: string, attachmentId: string): Promise<void> =>
+  apiClient
+    .delete(`/chats/${chatId}/attachments/${attachmentId}`)
+    .then(() => undefined)
+
 export const getSettings = () =>
-  apiClient.get('/settings').then((r) => r.data)
+  apiClient.get('/settings').then((response) => response.data)

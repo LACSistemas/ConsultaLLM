@@ -1,6 +1,6 @@
 # Conselho de IA
 
-Aplicação local onde você conversa com um conselho de LLMs. Cada pergunta é enviada em paralelo para **DeepSeek**, **Gemini** e **Anthropic Claude**, e a **OpenAI** atua como CEO consolidando as respostas.
+Aplicação local onde você conversa com um conselho de LLMs. Cada pergunta é enviada em paralelo para **DeepSeek**, **Gemini** e **Anthropic Claude**, e a **OpenAI** atua como CEO auditável: consolida a decisão, compara os conselheiros e explicita confiança, consensos, divergências, riscos, verificações e próximos passos.
 
 ## Pré-requisitos
 
@@ -27,17 +27,26 @@ GEMINI_API_KEY=AIza...       # aistudio.google.com
 ANTHROPIC_API_KEY=sk-ant-... # console.anthropic.com
 ```
 
-As chaves `DATABASE_URL` e `UPLOAD_DIR` já têm valores padrão — não precisa alterar.
+As chaves `DATABASE_URL` e `UPLOAD_DIR` já têm valores padrão — não precisa alterar. Os limites de anexos também podem ser configurados:
+
+```env
+MAX_UPLOAD_BYTES=10485760
+MAX_ATTACHMENT_CHARS=100000
+MAX_PDF_PAGES=100
+MAX_XLSX_ROWS=10000
+MAX_XLSX_UNCOMPRESSED_BYTES=52428800
+MAX_ATTACHMENTS_PER_MESSAGE=5
+```
 
 ### 2. Inicie o Backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8080
 ```
 
-O servidor sobe em `http://localhost:8000`. Acesse `http://localhost:8000/docs` para ver a API.
+O servidor sobe em `http://localhost:8080`. Acesse `http://localhost:8080/docs` para ver a API.
 
 ### 3. Inicie o Frontend
 
@@ -57,7 +66,15 @@ Acesse `http://localhost:5173` no navegador.
 2. Digite sua pergunta na caixa de texto
 3. Opcionalmente, clique no clipe para anexar um PDF ou planilha XLSX
 4. Pressione o botão de envio ou **Ctrl+Enter**
-5. Aguarde as respostas dos 3 conselheiros e a decisão final do CEO
+5. Aguarde as respostas dos 3 conselheiros e a avaliação auditável do CEO
+
+## Segurança dos anexos
+
+- Somente PDF e XLSX são aceitos, com validação de extensão, MIME type e assinatura do arquivo.
+- Cada anexo pertence a um único chat e só pode ser utilizado uma vez, na mensagem à qual for vinculado.
+- Arquivos removidos antes do envio e arquivos de chats excluídos também são apagados do disco.
+- Tamanho, páginas, linhas e texto extraído possuem limites configuráveis para reduzir abuso de recursos.
+- O conteúdo extraído é marcado como dado não confiável nos prompts para reduzir ataques de prompt injection.
 
 ## Estrutura do projeto
 
@@ -71,6 +88,6 @@ frontend/          ← Interface React + Vite
 
 **Backend não sobe**: verifique se o Python é 3.11+ com `python --version`
 
-**Frontend não conecta ao backend**: certifique-se de que o backend está rodando na porta 8000
+**Frontend não conecta ao backend**: certifique-se de que o backend está rodando na porta 8080
 
 **Erro de provider**: verifique se a API key correspondente está preenchida no `backend/.env`

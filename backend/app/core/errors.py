@@ -14,11 +14,33 @@ class ProviderError(Exception):
         super().__init__(f"{provider}: {message}")
 
 
-class AttachmentParseError(Exception):
+class AttachmentError(Exception):
+    status_code = 400
+
+    def __init__(self, detail: str):
+        self.detail = detail
+        super().__init__(detail)
+
+
+class AttachmentParseError(AttachmentError):
     def __init__(self, filename: str, reason: str):
         self.filename = filename
         self.reason = reason
-        super().__init__(f"Cannot parse {filename}: {reason}")
+        super().__init__(f"Não foi possível processar {filename}: {reason}")
+
+
+class AttachmentTooLargeError(AttachmentError):
+    status_code = 413
+
+    def __init__(self, max_bytes: int):
+        super().__init__(f"O arquivo excede o limite de {max_bytes // (1024 * 1024)} MB")
+
+
+class AttachmentNotFoundError(AttachmentError):
+    status_code = 404
+
+    def __init__(self):
+        super().__init__("Anexo não encontrado para este chat")
 
 
 async def chat_not_found_handler(request: Request, exc: ChatNotFoundError) -> JSONResponse:
@@ -29,5 +51,5 @@ async def provider_error_handler(request: Request, exc: ProviderError) -> JSONRe
     return JSONResponse(status_code=502, content={"detail": str(exc)})
 
 
-async def attachment_parse_error_handler(request: Request, exc: AttachmentParseError) -> JSONResponse:
-    return JSONResponse(status_code=400, content={"detail": str(exc)})
+async def attachment_error_handler(request: Request, exc: AttachmentError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
