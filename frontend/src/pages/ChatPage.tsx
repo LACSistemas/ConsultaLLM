@@ -14,6 +14,7 @@ import {
   deleteAttachment as deleteAttachmentRequest,
   uploadAttachment as uploadAttachmentRequest,
 } from '@/api/attachments'
+import { uploadAttachment as uploadAttachmentRequest } from '@/api/attachments'
 
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>()

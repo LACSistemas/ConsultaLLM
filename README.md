@@ -68,14 +68,6 @@ Acesse `http://localhost:5173` no navegador.
 4. Pressione o botão de envio ou **Ctrl+Enter**
 5. Aguarde as respostas dos 3 conselheiros e a avaliação auditável do CEO
 
-## Segurança dos anexos
-
-- Somente PDF e XLSX são aceitos, com validação de extensão, MIME type e assinatura do arquivo.
-- Cada anexo pertence a um único chat e só pode ser utilizado uma vez, na mensagem à qual for vinculado.
-- Arquivos removidos antes do envio e arquivos de chats excluídos também são apagados do disco.
-- Tamanho, páginas, linhas e texto extraído possuem limites configuráveis para reduzir abuso de recursos.
-- O conteúdo extraído é marcado como dado não confiável nos prompts para reduzir ataques de prompt injection.
-
 ## Estrutura do projeto
 
 ```
