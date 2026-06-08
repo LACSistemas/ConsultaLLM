@@ -90,7 +90,9 @@ async def run_council(
     attachment_context = format_attachment_context(attachment_texts)
 
     if attachment_context:
-        user_content = f"{user_message}\n\nCONTEÚDO DO ANEXO:\n{attachment_context}"
+        user_content = (
+            f"{user_message}\n\nCONTEXTO DE ANEXOS NÃO CONFIÁVEIS:\n{attachment_context}"
+        )
     else:
         user_content = user_message
 

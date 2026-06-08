@@ -10,6 +10,10 @@ import { useChats, useCreateChat } from '@/hooks/useChats'
 import { useMessages, useSendMessage } from '@/hooks/useMessages'
 import { useUploadAttachment } from '@/hooks/useAttachments'
 import { sendMessage as sendMessageRequest } from '@/api/messages'
+import {
+  deleteAttachment as deleteAttachmentRequest,
+  uploadAttachment as uploadAttachmentRequest,
+} from '@/api/attachments'
 import { uploadAttachment as uploadAttachmentRequest } from '@/api/attachments'
 
 export default function ChatPage() {
@@ -71,6 +75,11 @@ export default function ChatPage() {
     }
   }
 
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    const attachmentChatId = await ensureChat()
+    await deleteAttachmentRequest(attachmentChatId, attachmentId)
+  }
+
   const handleUpload = async (file: File) => {
     if (!chatId) {
       const newChatId = await ensureChat()
@@ -110,6 +119,7 @@ export default function ChatPage() {
       <MessageInput
         onSend={handleSend}
         onUpload={handleUpload}
+        onDeleteAttachment={handleDeleteAttachment}
         isPending={isPending}
       />
     </AppShell>

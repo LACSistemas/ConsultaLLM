@@ -27,7 +27,16 @@ GEMINI_API_KEY=AIza...       # aistudio.google.com
 ANTHROPIC_API_KEY=sk-ant-... # console.anthropic.com
 ```
 
-As chaves `DATABASE_URL` e `UPLOAD_DIR` já têm valores padrão — não precisa alterar.
+As chaves `DATABASE_URL` e `UPLOAD_DIR` já têm valores padrão — não precisa alterar. Os limites de anexos também podem ser configurados:
+
+```env
+MAX_UPLOAD_BYTES=10485760
+MAX_ATTACHMENT_CHARS=100000
+MAX_PDF_PAGES=100
+MAX_XLSX_ROWS=10000
+MAX_XLSX_UNCOMPRESSED_BYTES=52428800
+MAX_ATTACHMENTS_PER_MESSAGE=5
+```
 
 ### 2. Inicie o Backend
 

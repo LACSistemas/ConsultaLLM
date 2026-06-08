@@ -19,18 +19,25 @@ async def get_messages(chat_id: str, db: AsyncSession = Depends(get_db)):
 async def send_message(chat_id: str, body: CouncilRequest, db: AsyncSession = Depends(get_db)):
     await chat_service.get_chat(db, chat_id)
 
-    user_msg = await chat_service.add_message(db, chat_id, "user", body.message)
+    attachments = await attachment_service.get_pending_attachments(
+        db, chat_id, body.attachment_ids or []
+    )
+    attachment_texts = [attachment.parsed_text for attachment in attachments if attachment.parsed_text]
 
     history = await chat_service.get_chat_history(db, chat_id, limit=20)
-    history_without_last = history[:-1] if history and history[-1]["content"] == body.message else history
-
-    attachment_texts = await attachment_service.get_attachment_texts(db, body.attachment_ids or [])
 
     result = await council_service.run_council(
         user_message=body.message,
-        chat_history=history_without_last,
+        chat_history=history,
         attachment_texts=attachment_texts,
     )
+
+    user_msg = await chat_service.add_message(db, chat_id, "user", body.message)
+
+    if attachments:
+        await attachment_service.claim_attachments_for_message(
+            db, chat_id, [attachment.id for attachment in attachments], user_msg.id
+        )
 
     counselors_data = [c.model_dump() for c in result.counselors]
     import json as _json
@@ -43,9 +50,6 @@ async def send_message(chat_id: str, body: CouncilRequest, db: AsyncSession = De
         ceo_content,
         counselor_responses=counselors_data,
     )
-
-    if body.attachment_ids:
-        await attachment_service.link_attachments_to_message(db, body.attachment_ids, user_msg.id)
 
     await chat_service.auto_title_chat(db, chat_id, body.message)
 

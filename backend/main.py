@@ -6,10 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.errors import (
     ChatNotFoundError,
     ProviderError,
-    AttachmentParseError,
+    AttachmentError,
     chat_not_found_handler,
     provider_error_handler,
-    attachment_parse_error_handler,
+    attachment_error_handler,
 )
 from app.core.logging import setup_logging
 from app.db.init_db import init_db
@@ -35,7 +35,7 @@ app.add_middleware(
 
 app.add_exception_handler(ChatNotFoundError, chat_not_found_handler)
 app.add_exception_handler(ProviderError, provider_error_handler)
-app.add_exception_handler(AttachmentParseError, attachment_parse_error_handler)
+app.add_exception_handler(AttachmentError, attachment_error_handler)
 
 app.include_router(routes_chats.router, prefix="/api/v1")
 app.include_router(routes_messages.router, prefix="/api/v1")

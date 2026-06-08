@@ -6,45 +6,72 @@ import AttachmentChip from '@/components/attachments/AttachmentChip'
 import type { Attachment } from '@/types'
 
 interface MessageInputProps {
-  onSend: (message: string, attachmentIds: string[]) => void
+  onSend: (message: string, attachmentIds: string[]) => Promise<void>
   onUpload: (file: File) => Promise<Attachment>
+  onDeleteAttachment: (attachmentId: string) => Promise<void>
   isPending: boolean
 }
 
-export default function MessageInput({ onSend, onUpload, isPending }: MessageInputProps) {
+export default function MessageInput({
+  onSend,
+  onUpload,
+  onDeleteAttachment,
+  isPending,
+}: MessageInputProps) {
   const [text, setText] = useState('')
   const [pendingFiles, setPendingFiles] = useState<{ file: File; attachment?: Attachment }[]>([])
   const [uploading, setUploading] = useState(false)
+  const [attachmentError, setAttachmentError] = useState<string>()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
     if (files.length === 0) return
+
     setUploading(true)
+    setAttachmentError(undefined)
+    const uploaded: { file: File; attachment: Attachment }[] = []
     try {
-      const uploaded = await Promise.all(
-        files.map(async (file) => {
-          const attachment = await onUpload(file)
-          return { file, attachment }
-        })
+      for (const file of files) {
+        const attachment = await onUpload(file)
+        uploaded.push({ file, attachment })
+      }
+      setPendingFiles((previous) => [...previous, ...uploaded])
+    } catch {
+      await Promise.allSettled(
+        uploaded.map(({ attachment }) => onDeleteAttachment(attachment.id))
       )
-      setPendingFiles((prev) => [...prev, ...uploaded])
+      setAttachmentError('Não foi possível enviar os anexos. Verifique o formato e os limites.')
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
-  const removeFile = (index: number) => {
-    setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+  const removeFile = async (index: number) => {
+    const pendingFile = pendingFiles[index]
+    if (!pendingFile?.attachment) return
+
+    setAttachmentError(undefined)
+    try {
+      await onDeleteAttachment(pendingFile.attachment.id)
+      setPendingFiles((previous) => previous.filter((_, itemIndex) => itemIndex !== index))
+    } catch {
+      setAttachmentError('Não foi possível remover o anexo do servidor.')
+    }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!text.trim() || isPending) return
-    const ids = pendingFiles.map((f) => f.attachment?.id).filter(Boolean) as string[]
-    onSend(text.trim(), ids)
-    setText('')
-    setPendingFiles([])
+    const ids = pendingFiles.map((file) => file.attachment?.id).filter(Boolean) as string[]
+    setAttachmentError(undefined)
+    try {
+      await onSend(text.trim(), ids)
+      setText('')
+      setPendingFiles([])
+    } catch {
+      setAttachmentError('A mensagem não foi enviada. Os anexos foram mantidos para nova tentativa.')
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -55,6 +82,12 @@ export default function MessageInput({ onSend, onUpload, isPending }: MessageInp
 
   return (
     <div className="p-4 border-t border-slate-200 bg-white/60 backdrop-blur-sm">
+      {attachmentError && (
+        <p className="mb-3 text-sm text-red-600" role="alert">
+          {attachmentError}
+        </p>
+      )}
+
       {pendingFiles.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-3">
           {pendingFiles.map((f, i) => (
@@ -106,7 +139,7 @@ export default function MessageInput({ onSend, onUpload, isPending }: MessageInp
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.xlsx,.xls"
+        accept=".pdf,.xlsx"
         multiple
         className="hidden"
         onChange={handleFileChange}

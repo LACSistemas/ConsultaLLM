@@ -1,9 +1,10 @@
-from sqlalchemy import select, desc
+from sqlalchemy import delete, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.errors import ChatNotFoundError
-from app.db.models import Chat, Message
+from app.db.models import Attachment, Chat, Message
+from app.services.attachment_service import delete_stored_file
 
 
 async def create_chat(db: AsyncSession, title: str = "Novo chat") -> Chat:
@@ -31,6 +32,13 @@ async def list_chats(db: AsyncSession) -> list[Chat]:
 
 async def delete_chat(db: AsyncSession, chat_id: str) -> None:
     chat = await get_chat(db, chat_id)
+    result = await db.execute(select(Attachment.file_path).where(Attachment.chat_id == chat_id))
+    file_paths = list(result.scalars().all())
+
+    for file_path in file_paths:
+        delete_stored_file(file_path, strict=True)
+
+    await db.execute(delete(Attachment).where(Attachment.chat_id == chat_id))
     await db.delete(chat)
     await db.commit()
 
