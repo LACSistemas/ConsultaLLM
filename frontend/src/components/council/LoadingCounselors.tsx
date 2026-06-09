@@ -9,7 +9,7 @@ const SKELETONS = [
 export default function LoadingCounselors() {
   return (
     <div className="mb-6">
-      <div className="h-6 bg-slate-200 rounded w-48 mx-auto mb-4 animate-pulse" />
+      <p className="mb-4 text-center text-sm font-medium text-slate-500">O conselho está analisando, confrontando perspectivas e preparando uma síntese plural...</p>
       <div className="grid gap-4 md:grid-cols-3">
         {SKELETONS.map((s, i) => (
           <Card key={i} className={`animate-pulse border-l-4 ${s.border} ${s.bg}`}>

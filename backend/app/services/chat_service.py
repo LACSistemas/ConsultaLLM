@@ -92,7 +92,13 @@ async def get_chat_history(db: AsyncSession, chat_id: str, limit: int = 20) -> l
         if m.role == "user":
             history.append({"role": "user", "content": m.content})
         else:
-            history.append({"role": "assistant", "content": m.content})
+            history.append(
+                {
+                    "role": "assistant",
+                    "content": m.content,
+                    "counselor_responses": m.counselor_responses or [],
+                }
+            )
     return history
 
 

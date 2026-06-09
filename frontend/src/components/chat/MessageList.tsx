@@ -7,19 +7,54 @@ import LoadingCounselors from '@/components/council/LoadingCounselors'
 
 function parseCEOContent(content: string): CEODecision {
   const defaults: CEODecision = {
+    status: 'recommendation',
     decision: content,
     reasoning: '',
-    confidence: 0.5,
+    confidence: {
+      level: 'medium',
+      rationale: 'A resposta não informou uma avaliação qualitativa completa.',
+      supporting_factors: [],
+      limiting_factors: [],
+    },
     consensus: [],
     disagreements: [],
+    minority_views: [],
     counselor_assessments: [],
+    known_facts: [],
+    assumptions: [],
+    inferences: [],
+    value_judgments: [],
+    unknowns: [],
     risks: [],
     verification_needed: [],
+    clarifying_questions: [],
     next_steps: [],
   }
 
   try {
-    return { ...defaults, ...(JSON.parse(content) as Partial<CEODecision>) }
+    const parsed = JSON.parse(content) as Partial<CEODecision> & { confidence?: CEODecision['confidence'] | number }
+    const legacyConfidence = typeof parsed.confidence === 'number' ? parsed.confidence : undefined
+    const confidence = legacyConfidence === undefined
+      ? { ...defaults.confidence, ...(parsed.confidence ?? {}) }
+      : {
+          level: legacyConfidence >= 0.75 ? 'high' as const : legacyConfidence < 0.45 ? 'low' as const : 'medium' as const,
+          rationale: 'Classificação aproximada migrada de uma resposta antiga.',
+          supporting_factors: [],
+          limiting_factors: ['A resposta original usava autoconfiança numérica não calibrada.'],
+        }
+
+    const assessments = (parsed.counselor_assessments ?? []).map((assessment) => {
+      const legacy = assessment as typeof assessment & { confidence?: number; reliability?: 'low' | 'medium' | 'high' }
+      return {
+        ...assessment,
+        role: assessment.role ?? '',
+        reliability: legacy.reliability ?? (legacy.confidence !== undefined
+          ? legacy.confidence >= 0.75 ? 'high' : legacy.confidence < 0.45 ? 'low' : 'medium'
+          : 'medium'),
+      }
+    })
+
+    return { ...defaults, ...parsed, confidence, counselor_assessments: assessments } as CEODecision
   } catch {
     return defaults
   }

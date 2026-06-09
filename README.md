@@ -1,6 +1,6 @@
 # Conselho de IA
 
-Aplicação local onde você conversa com um conselho de LLMs. Cada pergunta é enviada em paralelo para **DeepSeek**, **Gemini** e **Anthropic Claude**, e a **OpenAI** atua como CEO auditável: consolida a decisão, compara os conselheiros e explicita confiança, consensos, divergências, riscos, verificações e próximos passos.
+Aplicação local onde você conversa com um conselho de LLMs. Cada pergunta é enviada em paralelo para **DeepSeek**, **Gemini** e **Anthropic Claude**, e a **OpenAI** atua como facilitadora da síntese: confronta os argumentos anonimizados, preserva divergências e explicita confiança qualitativa, fatos, premissas, riscos, verificações e próximos passos.
 
 ## Pré-requisitos
 
@@ -66,7 +66,7 @@ Acesse `http://localhost:5173` no navegador.
 2. Digite sua pergunta na caixa de texto
 3. Opcionalmente, clique no clipe para anexar um PDF ou planilha XLSX
 4. Pressione o botão de envio ou **Ctrl+Enter**
-5. Aguarde as respostas dos 3 conselheiros e a avaliação auditável do CEO
+5. Aguarde as duas rodadas dos 3 conselheiros e a síntese plural do facilitador
 
 ## Estrutura do projeto
 
@@ -83,3 +83,15 @@ frontend/          ← Interface React + Vite
 **Frontend não conecta ao backend**: certifique-se de que o backend está rodando na porta 8080
 
 **Erro de provider**: verifique se a API key correspondente está preenchida no `backend/.env`
+
+## Como o conselho delibera
+
+Cada consulta nova usa um protocolo deliberativo em duas rodadas:
+
+1. Os três provedores recebem, de forma rotativa, as funções de **Proponente pragmático**, **Cético construtivo** e **Explorador de alternativas**.
+2. Cada perspectiva é produzida de forma independente, distinguindo fatos, premissas, inferências, valores e informações ausentes.
+3. Na segunda rodada, os conselheiros confrontam respostas anonimizadas, registram críticas e podem revisar sua posição.
+4. Um facilitador recebe as perspectivas sem conhecer a marca que produziu cada uma e prepara uma **síntese plural provisória**.
+5. Quando faltam informações essenciais, a síntese pode interromper a recomendação e apresentar perguntas de esclarecimento.
+
+A confiança exibida é qualitativa (`baixa`, `moderada` ou `alta`) e sempre acompanha fatores de apoio e limitações. Ela não representa uma probabilidade estatística. O histórico também preserva fatos, premissas, divergências, desconhecidos e trechos das perspectivas anteriores, evitando reenviar o JSON bruto como contexto de conversa.
