@@ -7,7 +7,7 @@ import { getSettings } from '@/api/attachments'
 import type { SettingsResponse } from '@/types'
 
 const PROVIDER_LABELS: Record<string, string> = {
-  openai: 'OpenAI (CEO)',
+  openai: 'OpenAI (Facilitador)',
   deepseek: 'DeepSeek (Agente A)',
   gemini: 'Google Gemini (Agente B)',
   anthropic: 'Anthropic Claude (Agente C)',
